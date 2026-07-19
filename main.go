@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"text/tabwriter"
 	"time"
 )
 
-func parseTimeString (tStr string) (time.Time, error) {
+func parseTimeString(tStr string) (time.Time, error) {
 	n := time.Now()
 	year := n.Year()
 	month := n.Month()
@@ -24,8 +25,17 @@ func parseTimeString (tStr string) (time.Time, error) {
 	nanosecond := t.Nanosecond()
 
 	fullTime := time.Date(year, month, day, hour, minute, second, nanosecond, location)
-	
+
 	return fullTime, nil
+}
+
+func convertDateFormat(dStr string) (string, error) {
+	d, err := time.Parse("02/01/2006", dStr)
+	if err != nil {
+		return "", err
+	}
+
+	return d.Format(time.DateOnly), nil
 }
 
 func writeFile(taskList []Task) error {
@@ -65,6 +75,58 @@ func readFile(filePath string) ([]Task, error) {
 	return taskList, nil
 }
 
+func displayTaskList(taskList []Task) {
+	w := tabwriter.NewWriter(os.Stdout, 4, 0, 4, ' ', 0)
+
+	fmt.Fprintln(w, "ID\tName\tStatus\tPriority\tStart time\tEnd time")
+	fmt.Fprintln(w, "----\t------------\t------------\t------------\t------------\t------------")
+
+	if len(taskList) == 0 {
+		fmt.Fprintln(w, "Task list is empty!")
+		w.Flush()
+		return
+	}
+
+	for _, task := range taskList {
+		startTimeStr := fmt.Sprintf("%s - %s", task.StartTime.Format("15:04"), task.StartTime.Format("02/01/2006"))
+		endTimeStr := fmt.Sprintf("%s - %s", task.EndTime.Format("15:04"), task.EndTime.Format("02/01/2006"))
+		fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n", task.ID, task.Name, task.Status, task.Priority, startTimeStr, endTimeStr)
+	}
+
+	w.Flush()
+}
+
+func displayTaskListByDate(dStr string) error {
+	fileName, err := convertDateFormat(dStr)
+	if err != nil {
+		return err
+	}
+
+	filePath := fmt.Sprintf("data/%s.json", fileName)
+
+	taskList, err := readFile(filePath)
+	if err != nil {
+		return err
+	}
+
+	displayTaskList(taskList)
+	return nil
+}
+
+func displayTaskListByToday() error {
+	n := time.Now()
+	today := n.Format(time.DateOnly)
+
+	filePath := fmt.Sprintf("data/%s.json",today)
+
+	taskList, err := readFile(filePath)
+	if err != nil {
+		return err
+	}
+
+	displayTaskList(taskList)
+	return nil
+}
+
 func main() {
-	fmt.Println("Hello, World!")
 }
