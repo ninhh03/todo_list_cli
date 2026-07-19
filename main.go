@@ -108,13 +108,25 @@ func displayTaskListByDate(dStr string) error {
 	if err != nil {
 		return err
 	}
+
+	displayTaskList(taskList)
+	return nil
+}
+
+func displayTaskListByToday() error {
+	n := time.Now()
+	today := n.Format(time.DateOnly)
+
+	filePath := fmt.Sprintf("data/%s.json",today)
+
+	taskList, err := readFile(filePath)
+	if err != nil {
+		return err
+	}
+
 	displayTaskList(taskList)
 	return nil
 }
 
 func main() {
-	err := displayTaskListByDate("18/07/2026")
-	if err != nil {
-		fmt.Println("Error: ", err)
-	}
 }
