@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 	"text/tabwriter"
 	"time"
 )
@@ -128,5 +130,57 @@ func displayTaskListByToday() error {
 	return nil
 }
 
+func inputFromKeyboard() (string, string, time.Time, time.Time, error) {
+	reader := bufio.NewReader(os.Stdin)
+
+	fmt.Print(">📝 Task name: ")
+	name, err := reader.ReadString('\n')
+	if err != nil {
+		return "", "", time.Time{}, time.Time{}, err
+	}
+	name = strings.TrimSpace(name)
+
+	fmt.Print(">⭐ Priority (High, Medium, Low): ")
+	priority, err := reader.ReadString('\n')
+	if err != nil {
+		return "", "", time.Time{}, time.Time{}, err
+	}
+	priority = strings.TrimSpace(priority)
+
+	fmt.Print(">⏰ Start time (hh:mm): ")
+	startTimeStr, err := reader.ReadString('\n')
+	if err != nil {
+		return "", "", time.Time{}, time.Time{}, err
+	}
+	startTimeStr = strings.TrimSpace(startTimeStr)
+	startTime, err := parseTimeString(startTimeStr)
+	if err != nil {
+		return "", "", time.Time{}, time.Time{}, err
+	}
+
+	fmt.Print(">⏰ End time (hh:mm): ")
+	endTimeStr, err := reader.ReadString('\n')
+	if err != nil {
+		return "", "", time.Time{}, time.Time{}, err
+	}
+	endTimeStr = strings.TrimSpace(endTimeStr)
+	endTime, err := parseTimeString(endTimeStr)
+	if err != nil {
+		return "", "", time.Time{}, time.Time{}, err
+	}
+
+	if(!endTime.After(startTime)) {
+		return "", "", time.Time{}, time.Time{}, fmt.Errorf("end time must be after start time!")
+	}
+
+	return name, priority, startTime, endTime, nil
+}
+
+
 func main() {
+	name, priority, startTime, endTime, err := inputFromKeyboard()
+	if err != nil {
+		fmt.Println("Error: ", err)
+	}
+	fmt.Println(name, priority, startTime, endTime)
 }
