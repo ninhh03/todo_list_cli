@@ -40,6 +40,10 @@ func convertDateFormat(dStr string) (string, error) {
 	return d.Format(time.DateOnly), nil
 }
 
+func generateID(ordinalNumber int) (string, error) {
+	return fmt.Sprintf("t%02d", ordinalNumber), nil
+}
+
 func writeFile(taskList []Task) error {
 	n := time.Now()
 	filePath := fmt.Sprintf("data/%s.json", n.Format(time.DateOnly))
@@ -169,18 +173,36 @@ func inputFromKeyboard() (string, string, time.Time, time.Time, error) {
 		return "", "", time.Time{}, time.Time{}, err
 	}
 
-	if(!endTime.After(startTime)) {
-		return "", "", time.Time{}, time.Time{}, fmt.Errorf("end time must be after start time!")
-	}
-
 	return name, priority, startTime, endTime, nil
 }
 
+func createTask(ordinalNumber int, name string, priority string, startTime time.Time, endTime time.Time) (Task, error) {
+	id, err := generateID(ordinalNumber)
+	if err != nil {
+		return Task{}, err
+	}
+	if name == "" {
+		return Task{}, fmt.Errorf("task name cannot be empty!")
+	}
+	status := "To-do"
+	if priority == "" {
+		return Task{}, fmt.Errorf("priority cannot be empty!")
+	}
+	if(!endTime.After(startTime)) {
+		return Task{}, fmt.Errorf("end time must be after start time!")
+	}
+	
+	newTask := Task{
+		ID: id,
+		Name: name,
+		Status: status,
+		Priority: priority,
+		StartTime: startTime,
+		EndTime: endTime,
+	}
+
+	return newTask, nil
+}
 
 func main() {
-	name, priority, startTime, endTime, err := inputFromKeyboard()
-	if err != nil {
-		fmt.Println("Error: ", err)
-	}
-	fmt.Println(name, priority, startTime, endTime)
 }
