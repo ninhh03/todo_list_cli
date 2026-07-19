@@ -83,6 +83,7 @@ func displayTaskList(taskList []Task) {
 
 	if len(taskList) == 0 {
 		fmt.Fprintln(w, "Task list is empty!")
+		w.Flush()
 		return
 	}
 
@@ -95,6 +96,25 @@ func displayTaskList(taskList []Task) {
 	w.Flush()
 }
 
+func displayTaskListByDate(dStr string) error {
+	fileName, err := convertDateFormat(dStr)
+	if err != nil {
+		return err
+	}
+
+	filePath := fmt.Sprintf("data/%s.json", fileName)
+
+	taskList, err := readFile(filePath)
+	if err != nil {
+		return err
+	}
+	displayTaskList(taskList)
+	return nil
+}
+
 func main() {
-	fmt.Println("Hello, World!")
+	err := displayTaskListByDate("18/07/2026")
+	if err != nil {
+		fmt.Println("Error: ", err)
+	}
 }
